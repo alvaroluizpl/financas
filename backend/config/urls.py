@@ -14,9 +14,26 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# admin.site.urls contém todas as rotas prontas da interface administrativa
+# do Django (/admin/).
 from django.contrib import admin
-from django.urls import path
 
+# path define uma rota. include permite "plugar" o urls.py de outro app
+# dentro de um prefixo, delegando o roteamento para aquele app.
+from django.urls import path, include
+
+# Roteador principal do projeto: toda requisição passa primeiro por aqui.
 urlpatterns = [
+    # Todas as URLs que começam com "admin/" vão para o painel administrativo.
     path('admin/', admin.site.urls),
+
+    # Toda URL que começa com "api/usuarios/" é delegada para o
+    # usuarios/urls.py, que decide o que fazer com o restante do caminho.
+    path('api/usuarios/', include('usuarios.urls')),
+
+    # Mesma ideia, agora para o app de categorias.
+    path('api/categorias/', include('categorias.urls')),
+
+    # Mesma ideia, agora para o app de transações.
+    path('api/transacoes/', include('transacoes.urls')),
 ]

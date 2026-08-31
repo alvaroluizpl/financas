@@ -10,72 +10,105 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+# Path é uma classe do Python para trabalhar com caminhos de arquivo/pasta
+# de forma independente do sistema operacional (Windows, Linux, Mac).
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR é a pasta raiz do projeto (a pasta "backend").
+# __file__ é o caminho deste próprio arquivo (settings.py).
+# .resolve() transforma em caminho absoluto; .parent sobe um nível de pasta.
+# Aqui subimos duas vezes: settings.py -> config/ -> backend/.
+# Essa variável é usada depois para montar outros caminhos, como o do banco.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Chave secreta usada pelo Django para assinar cookies, tokens, sessões etc.
+# ATENÇÃO: em um projeto real, essa chave não deve ficar exposta no código
+# nem no Git — o ideal é carregá-la de uma variável de ambiente (.env).
 SECRET_KEY = 'django-insecure-83khx_e7lmm8)=&rs7u7bg$vf^80f=x!9#umns2m)zv)w24*qx'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG=True ativa páginas de erro detalhadas (ótimo para desenvolvimento).
+# Em produção, DEBUG deve ser False, senão informações sensíveis do
+# servidor podem vazar para qualquer visitante que causar um erro.
 DEBUG = True
 
+# Lista de domínios/IPs autorizados a servir esta aplicação.
+# Vazia porque, em desenvolvimento com DEBUG=True, o Django libera
+# automaticamente "localhost" e "127.0.0.1". Em produção, é obrigatório
+# preencher com o(s) domínio(s) reais do site.
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
+# Lista de apps "instalados" no projeto. O Django só reconhece models,
+# templates, comandos e migrations de apps que estejam nesta lista.
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.admin',        # Painel administrativo (/admin/)
+    'django.contrib.auth',         # Sistema de autenticação (usuários, permissões)
+    'django.contrib.contenttypes', # Suporte genérico a tipos de conteúdo, usado pelo admin/auth
+    'django.contrib.sessions',     # Sistema de sessões (mantém dados entre requisições)
+    'django.contrib.messages',     # Sistema de mensagens temporárias (ex: "cadastro salvo!")
+    'django.contrib.staticfiles',  # Gerenciamento de arquivos estáticos (CSS, JS, imagens)
+    'usuarios',                    # Nosso app de usuários
+    'categorias',                  # Nosso app de categorias
+    'transacoes',                  # Nosso app de transações
 ]
 
+# Middlewares são "camadas" pelas quais toda requisição/resposta passa,
+# em ordem, antes de chegar (ou depois de sair) da view. Cada um cuida
+# de uma responsabilidade específica.
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',            # Aplica proteções básicas de segurança HTTP
+    'django.contrib.sessions.middleware.SessionMiddleware',      # Habilita o uso de sessões (request.session)
+    'django.middleware.common.CommonMiddleware',                 # Ajustes gerais de URL/requisição
+    'django.middleware.csrf.CsrfViewMiddleware',                 # Proteção contra ataques CSRF em formulários
+    'django.contrib.auth.middleware.AuthenticationMiddleware',   # Associa o usuário logado à requisição (request.user)
+    'django.contrib.messages.middleware.MessageMiddleware',      # Habilita o sistema de mensagens temporárias
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',    # Proteção contra ataques de clickjacking
 ]
 
+# Indica qual módulo Python contém o roteador principal de URLs do projeto.
+# Aqui aponta para o arquivo config/urls.py.
 ROOT_URLCONF = 'config.urls'
 
+# Configuração do motor de templates HTML do Django (usado, por exemplo,
+# pelo Admin e por páginas renderizadas no servidor).
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',  # Motor de template padrão do Django
+        'DIRS': [],          # Pastas extras onde procurar templates (nenhuma customizada aqui)
+        'APP_DIRS': True,    # Procura automaticamente templates dentro de cada app (app/templates/)
         'OPTIONS': {
+            # "context_processors" injetam variáveis automaticamente em
+            # todo template renderizado, sem precisar passá-las manualmente.
             'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',      # Disponibiliza a variável "request" nos templates
+                'django.contrib.auth.context_processors.auth',      # Disponibiliza dados do usuário logado
+                'django.contrib.messages.context_processors.messages',  # Disponibiliza as mensagens temporárias
             ],
         },
     },
 ]
 
+# Caminho para o objeto WSGI usado por servidores tradicionais (ex: Gunicorn)
+# para rodar a aplicação Django em produção.
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# Configuração do banco de dados. Por padrão, o Django usa SQLite,
+# um banco leve que salva tudo em um único arquivo — ótimo para estudar
+# e prototipar, mas normalmente trocado por PostgreSQL/MySQL em produção.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',  # Driver do banco (SQLite neste caso)
+        'NAME': BASE_DIR / 'db.sqlite3',          # Caminho do arquivo do banco, dentro de BASE_DIR
     }
 }
 
@@ -83,17 +116,25 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
+# Regras aplicadas automaticamente às senhas do sistema de autenticação
+# do Django (django.contrib.auth), usadas ao criar/trocar senha de usuário.
+# Obs: essas regras valem para o model User padrão do Django, não para o
+# campo "senha" do nosso model Usuario, que ainda não tem essa validação.
 AUTH_PASSWORD_VALIDATORS = [
     {
+        # Impede senha muito parecida com nome, e-mail etc. do usuário.
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
+        # Exige um tamanho mínimo de senha (padrão: 8 caracteres).
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
+        # Bloqueia senhas muito comuns (ex: "123456", "password").
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
+        # Impede senha composta só de números.
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
@@ -102,24 +143,33 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
+# Idioma padrão da aplicação (usado em mensagens de erro do Django, admin etc).
 LANGUAGE_CODE = 'en-us'
 
+# Fuso horário padrão usado para salvar e exibir datas/horas.
 TIME_ZONE = 'UTC'
 
+# Habilita o sistema de internacionalização (tradução de textos).
 USE_I18N = True
 
+# Faz o Django guardar datas/horas com fuso horário (timezone-aware),
+# em vez de "datas ingênuas" sem fuso — evita bugs de horário.
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
+# Prefixo de URL usado para servir arquivos estáticos (CSS, JS, imagens).
 STATIC_URL = 'static/'
 
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+# Configuração de envio de e-mails. O backend "console" apenas imprime
+# o e-mail no terminal em vez de enviá-lo de verdade — útil para
+# desenvolvimento, sem precisar configurar um servidor SMTP real.
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
