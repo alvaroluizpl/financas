@@ -18,8 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('usuarios.urls')),
-    path('api/', include('categorias.urls')),
-    path('api/', include('transacoes.urls')),
+    path('admin/', admin.site.urls),  # /admin/ abre o Django Admin
+    path('api/', include('usuarios.urls')),  # tudo que vem depois de /api/ é entregue ao urls.py de usuarios (include "puxa" as rotas do app)
+    path('api/', include('categorias.urls')),  # idem para categorias; o Django tenta cada lista, na ordem, até achar a rota
+    path('api/', include('transacoes.urls')),  # idem para transações
 ]

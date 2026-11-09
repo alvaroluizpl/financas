@@ -37,9 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'usuarios',
-    'categorias',
-    'transacoes',
+    'rest_framework',  # registra o DRF como app; sem isso dá TemplateDoesNotExist na tela da Browsable API
+    'usuarios',  # nosso app de usuários
+    'categorias',  # nosso app de categorias
+    'transacoes',  # nosso app de transações
 ]
 
 MIDDLEWARE = [
