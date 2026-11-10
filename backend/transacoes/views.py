@@ -1,25 +1,29 @@
-from rest_framework.decorators import api_view  # decorator que transforma uma função em view de API do DRF
-from rest_framework.response import Response  # devolve o JSON e permite escolher o status code
-from .models import Transacao  # importa o model para poder consultar o banco
+from rest_framework import viewsets  # módulo com os ViewSets (CRUD pronto)
+from rest_framework.decorators import action  # decorator que transforma um método do ViewSet em uma rota extra
+from rest_framework.response import Response  # devolve o JSON com o status code
+from .models import Transacao  # importa o model para consultar o banco
 from .serializers import TransacaoSerializer  # importa o serializer de transações
 
 
-@api_view(['GET'])  # só aceita GET
-def listar_transacoes(request):  # view que lista todas as transações
-    transacoes = Transacao.objects.all()  # busca todas as transações no banco
-    serializer = TransacaoSerializer(transacoes, many=True)  # traduz a lista de objetos para JSON (many=True: é uma lista)
-    return Response(serializer.data)  # devolve o JSON com status 200
+class TransacaoViewSet(viewsets.ModelViewSet):  # herda do ModelViewSet: já faz listar, buscar, criar, editar e apagar
+    queryset = Transacao.objects.all()  # de onde vêm os dados (nome fixo)
+    serializer_class = TransacaoSerializer  # qual serializer usar (nome fixo)
 
+    def get_queryset(self):  # sobrescreve o método que o ViewSet chama para saber QUAIS dados usar
+        transacoes = Transacao.objects.all()  # começa com todas as transações
+        tipo = self.request.query_params.get('tipo')  # lê o ?tipo= da URL (devolve None se não vier)
+        if tipo:  # se veio o filtro...
+            transacoes = transacoes.filter(tipo=tipo.upper())  # filtra pelo tipo; upper() faz ?tipo=receita funcionar também
+        return transacoes  # devolve a lista (filtrada ou completa)
 
-@api_view(['GET'])  # só aceita GET
-def listar_transacoes_pendentes(request):  # view que lista só as transações pendentes
-    transacoes = Transacao.objects.filter(status='PENDENTE')  # única diferença para a anterior: filter() traz só as de status PENDENTE
-    serializer = TransacaoSerializer(transacoes, many=True)  # mesmo serializer; o formato do JSON não muda
-    return Response(serializer.data)  # devolve o JSON com status 200
+    @action(detail=False, methods=['get'])  # rota extra da LISTA (detail=False): /transacoes/pendentes/, só aceita GET
+    def pendentes(self, request):  # o nome do método vira o final da URL
+        transacoes = Transacao.objects.filter(status='PENDENTE')  # só as transações com status PENDENTE (este atalho ignora o ?tipo=)
+        serializer = self.get_serializer(transacoes, many=True)  # get_serializer usa o serializer_class do próprio ViewSet
+        return Response(serializer.data)  # devolve o JSON com status 200
 
-
-@api_view(['GET'])  # atividade parte 1: só aceita GET
-def listar_transacoes_pagas(request):  # view que lista só as transações pagas
-    transacoes = Transacao.objects.filter(status='PAGO')  # filter() traz só as de status PAGO
-    serializer = TransacaoSerializer(transacoes, many=True)  # mesmo serializer
-    return Response(serializer.data)  # devolve o JSON com status 200
+    @action(detail=False, methods=['get'])  # rota extra: /transacoes/pagas/, só aceita GET
+    def pagas(self, request):  # o nome do método vira o final da URL
+        transacoes = Transacao.objects.filter(status='PAGO')  # só as transações com status PAGO
+        serializer = self.get_serializer(transacoes, many=True)  # traduz a lista para JSON
+        return Response(serializer.data)  # devolve o JSON com status 200

@@ -1,7 +1,7 @@
-from django.urls import path  # path liga um endereço (URL) a uma view
-from .views import listar_usuarios, buscar_usuario  # importa as duas views de usuários
+from rest_framework.routers import SimpleRouter  # o Router cria as rotas do ViewSet sozinho
+from .views import UsuarioViewSet  # importa o ViewSet de usuários
 
-urlpatterns = [  # lista de rotas deste app
-    path('usuarios/', listar_usuarios),  # /api/usuarios/ lista todos os usuários
-    path('usuarios/<int:id>/', buscar_usuario),  # /api/usuarios/1/ busca um; <int:id> entrega o número da URL para a view no parâmetro id
-]  # fecha a lista de rotas
+router = SimpleRouter()  # cria o router
+router.register('usuarios', UsuarioViewSet)  # "o recurso usuarios é atendido por este ViewSet": gera usuarios/ (lista) e usuarios/<id>/ (detalhe)
+
+urlpatterns = router.urls  # router.urls é a lista de rotas pronta; o Django procura por este nome

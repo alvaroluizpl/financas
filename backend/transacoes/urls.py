@@ -1,10 +1,7 @@
-from django.urls import path  # path liga um endereço (URL) a uma view
-from .views import (  # importa as três views de transações
-    listar_transacoes, listar_transacoes_pendentes, listar_transacoes_pagas,
-)
+from rest_framework.routers import SimpleRouter  # o Router cria as rotas do ViewSet sozinho
+from .views import TransacaoViewSet  # importa o ViewSet de transações
 
-urlpatterns = [  # lista de rotas deste app
-    path('transacoes/', listar_transacoes),  # /api/transacoes/ lista todas
-    path('transacoes/pendentes/', listar_transacoes_pendentes),  # /api/transacoes/pendentes/ lista só as PENDENTE
-    path('transacoes/pagas/', listar_transacoes_pagas),  # /api/transacoes/pagas/ lista só as PAGO
-]  # fecha a lista de rotas
+router = SimpleRouter()  # cria o router
+router.register('transacoes', TransacaoViewSet)  # gera transacoes/ e transacoes/<id>/ e também lê os @action (pendentes e pagas)
+
+urlpatterns = router.urls  # lista de rotas pronta; não precisamos mais escrever pendentes e pagas na mão

@@ -106,9 +106,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'  # idioma do projeto: mensagens de validação do DRF e o Django Admin aparecem em português
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'  # fuso horário: datas como o data_cadastro passam a usar o horário de Brasília
 
 USE_I18N = True
 
